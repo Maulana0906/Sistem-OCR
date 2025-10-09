@@ -1,11 +1,8 @@
 const video = document.getElementById('video');
 let stream = null;
-const snapBtn = document.getElementById('snapBtn');
 const canvas = document.getElementById('canvas')
 const scc = document.getElementById('scc')
-const photo = document.getElementById('photo')
-const text = document.getElementById('text')
-
+const audio = document.getElementById('audio')
 
 async function startVideo(){
     try{
@@ -22,7 +19,7 @@ async function startVideo(){
 }
     startVideo();
 
-setInterval( async () => {
+setInterval(async () => {
     const videoRect = video.getBoundingClientRect();
     const areaRect = scc.getBoundingClientRect()
     const scaleX = video.videoWidth / videoRect.width;
@@ -38,21 +35,26 @@ setInterval( async () => {
 
     const context = canvas.getContext('2d');
     context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, scc.clientWidth , scc.clientHeight);
+    const dataURL = canvas.toDataURL('image/png')
 
-     try {
-        const res = await fetch('http://localhost:5000/ocr', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ image: dataURL })
-        });
+  try {
+    const res = await fetch('http://127.0.0.1:5000/ocr', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: dataURL })
+    });
 
-        const data = await res.json();
-        text.textContent = data.text || data.error || '(no text detected)';
-    } catch (error) {
-        console.error('Error:', error);
-    }
+    const data = await res.blob();
+    const url = URL.createObjectURL(data)
+    const audio = new Audio(url);
+    audio.play()
 
-},1000)
+  } catch (error) {
+    console.log('Error:', error);
+  }
+
+
+},4000)
 
 
 //sudah install tesseract nya
